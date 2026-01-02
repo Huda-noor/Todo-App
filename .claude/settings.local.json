@@ -2,7 +2,24 @@
   "permissions": {
     "allow": [
       "Bash(git fetch:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(powershell -ExecutionPolicy Bypass -File \".specify/scripts/powershell/create-new-feature.ps1\" -Json -Number 1 -ShortName \"phase-ii-fullstack-todo\" -Description \"Phase II Full-Stack Todo Web Application\")",
+      "Bash(powershell -ExecutionPolicy Bypass -File:*)",
+      "WebSearch",
+      "WebFetch(domain:www.better-auth.com)",
+      "WebFetch(domain:www.answeroverflow.com)",
+      "WebFetch(domain:github.com)",
+      "Skill(sp.tasks)",
+      "Bash(cat:*)",
+      "Bash(test:*)",
+      "Bash(node:*)",
+      "Bash(python -m alembic:*)",
+      "Bash(taskkill:*)",
+      "mcp__Neon__provision_neon_auth",
+      "mcp__Neon__get_database_tables",
+      "mcp__Neon__run_sql",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

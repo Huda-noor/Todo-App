@@ -1,19 +1,21 @@
 <!--
 Sync Impact Report:
-- Version change: none → 1.0.0
-- Modified principles: Initial constitution creation
+- Version change: 1.0.0 → 1.1.0
+- Modified principles:
+  * III. Phase Governance & Isolation → III. Phase Governance & Isolation (expanded)
+  * IV. Technology Constraints → IV. Technology Constraints (expanded with phase matrix)
+  * V. Quality & Architecture Principles → V. Quality & Architecture Principles (expanded)
 - Added sections:
-  * Spec-Driven Development (Mandatory)
-  * Agent Behavior Rules (Zero Deviation)
-  * Phase Governance & Isolation
-  * Technology Constraints (Non-Negotiable)
-  * Quality & Architecture Principles
-  * Stability & Enforcement
-- Removed sections: N/A (initial creation)
+  * Phase-specific technology matrix in Section IV
+  * Phase II technology authorizations in Section IV
+  * Back-porting prohibition rules in Section III
+  * Full-stack separation principles in Section V
+  * Authentication security principles in Section V
+- Removed sections: None
 - Templates requiring updates:
-  ✅ plan-template.md - Verified Constitution Check section aligns
-  ✅ spec-template.md - Verified requirements alignment with SDD principles
-  ✅ tasks-template.md - Verified task categorization reflects constitutional principles
+  * plan-template.md - No changes required (already uses Constitution Check pattern)
+  * spec-template.md - No changes required (technology-agnostic)
+  * tasks-template.md - No changes required (structure supports phase-based work)
 - Follow-up TODOs: None
 -->
 
@@ -70,43 +72,78 @@ The project is divided into strictly isolated phases (Phase I to Phase V).
 - No partial implementations for future phases are allowed
 - Architecture may evolve **ONLY** through updated specifications and plans
 
+**Back-Porting Prohibition**:
+- Phase II technologies (FastAPI, SQLModel, Neon DB, Next.js, Better Auth) are **PROHIBITED** in Phase I
+- Authentication, web frontend, and persistent database are **PROHIBITED** in Phase I
+- No AI, agent frameworks, or advanced infrastructure (Docker, Kubernetes, Kafka, Dapr, OpenAI Agents SDK, MCP) may be used until their designated later phases
+- Any attempt to introduce a higher-phase technology into a lower phase is a constitutional violation
+
+**Phase Progression Rules**:
+- Phase II MUST build incrementally on Phase I concepts
+- Persistence, API, and web UI are implemented as new layers in Phase II, not modifications to Phase I
+- Each phase delivers complete, working software before the next phase begins
+- Phase transitions require explicit specification approval
+
 **Consequence**: Phase leakage is a constitutional violation.
 
 **Rationale**: Phase isolation prevents complexity creep, ensures each phase delivers working software, and maintains focus on current requirements without prematurely optimizing for uncertain futures.
 
 ### IV. Technology Constraints (Non-Negotiable)
 
-All agents **MUST** comply with the following technology stack:
+All agents **MUST** comply with the following phase-specific technology matrix:
 
-**Backend**:
-- Python
-- FastAPI
-- SQLModel
-- Neon DB (PostgreSQL-compatible)
+#### Phase I: Console Application (In-Memory)
 
-**Frontend** (later phases only):
-- Next.js
+**Authorized Technologies**:
+- Python (standard library ONLY)
 
-**AI & Agent Infrastructure**:
-- OpenAI Agents SDK
-- MCP (Model Context Protocol)
+**Explicitly Prohibited in Phase I**:
+- Any third-party libraries or frameworks
+- Persistence (files, databases, caching)
+- Web servers, APIs, or HTTP
+- Authentication or user management
+- Frontend technologies
 
-**Infrastructure** (later phases only):
+**Architecture**: Pure in-memory Python console application
+
+#### Phase II: Full-Stack Web Application
+
+**Backend (Authorized)**:
+- Python with FastAPI for REST API
+- SQLModel for ORM/data layer
+- Neon Serverless PostgreSQL for database
+
+**Frontend (Authorized)**:
+- Next.js (React + TypeScript)
+
+**Authentication (Authorized)**:
+- Better Auth library
+- Email/password authentication ONLY (no OAuth, SSO, or social login in Phase II)
+
+**Architecture**: Full-stack web application with separate backend and frontend
+
+#### Phase III–V: Advanced Infrastructure
+
+**Authorized Technologies** (in designated phases):
 - Docker
 - Kubernetes
 - Kafka
 - Dapr
+- OpenAI Agents SDK
+- MCP (Model Context Protocol)
 
 **Rules**:
-- No alternative languages, frameworks, or tools may be introduced
-- Any change to the technology stack requires a formal specification update
+- No alternative languages, frameworks, or tools may be introduced without formal specification update
+- Technologies are phase-locked and cannot be used before their designated phase
+- Any change to the technology stack requires a formal specification update and constitutional amendment
 
-**Rationale**: Technology standardization reduces complexity, ensures team expertise concentration, and maintains consistent patterns across the codebase. Changes require formal review to assess ecosystem impacts.
+**Rationale**: Technology standardization reduces complexity, ensures team expertise concentration, and maintains consistent patterns across the codebase. Phase-locking prevents premature complexity and ensures each phase is buildable with its authorized stack.
 
 ### V. Quality & Architecture Principles
 
 All deliverables must adhere to the following principles:
 
+**Core Architecture**:
 - **Clean Architecture**: Clear separation of concerns and dependency rules
 - **Separation of Concerns**: Each module has a single, well-defined responsibility
 - **Modular and Layered Design**: Components are independently testable and replaceable
@@ -114,12 +151,33 @@ All deliverables must adhere to the following principles:
 - **Deterministic and Predictable Behavior**: No hidden side effects
 - **Cloud-Native Readiness**: Design for distributed systems from the start
 
+**Full-Stack Separation** (Phase II+):
+- Clear boundary between backend API and frontend client
+- Backend exposes RESTful endpoints; frontend consumes them
+- No server-side rendering of business logic in frontend
+- API contracts must be defined before implementation
+- Frontend and backend may be developed, tested, and deployed independently
+
+**API Design** (Phase II+):
+- Stateless API endpoints where possible
+- Clear resource-based URL structure
+- Consistent error response format
+- Proper HTTP status codes
+- Request validation at API boundaries
+
+**Authentication Security** (Phase II+):
+- Passwords MUST be hashed (never stored in plaintext)
+- Authentication tokens MUST have expiration
+- Secure session management
+- No sensitive data in URL parameters
+- HTTPS required for all authenticated endpoints (production)
+
 **Rules**:
 - Quality is mandatory and cannot be postponed to later phases
 - Architecture decisions must be documented in specifications before implementation
 - Code reviews must verify adherence to these principles
 
-**Rationale**: Quality debt compounds exponentially. Building quality in from the start is cheaper than retrofitting it later. Cloud-native patterns ensure scalability and maintainability as the system grows.
+**Rationale**: Quality debt compounds exponentially. Building quality in from the start is cheaper than retrofitting it later. Cloud-native patterns ensure scalability and maintainability as the system grows. Full-stack separation enables independent scaling and team specialization.
 
 ### VI. Test-First Development (When Specified)
 
@@ -191,7 +249,7 @@ When significant architectural decisions are detected (typically during planning
 - **Scope**: Cross-cutting and influences system design
 
 **Process**:
-- Suggest: "📋 Architectural decision detected: [brief-description] — Document reasoning and tradeoffs? Run `/sp.adr [decision-title]`"
+- Suggest: "Architectural decision detected: [brief-description] — Document reasoning and tradeoffs? Run `/sp.adr [decision-title]`"
 - Wait for user consent
 - Never auto-create ADRs
 - Group related decisions when appropriate
@@ -234,4 +292,4 @@ Constitutional changes require:
 4. User approval
 5. Version increment following semantic versioning
 
-**Version**: 1.0.0 | **Ratified**: 2025-12-27 | **Last Amended**: 2025-12-27
+**Version**: 1.1.0 | **Ratified**: 2025-12-27 | **Last Amended**: 2025-12-28
