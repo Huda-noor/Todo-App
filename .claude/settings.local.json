@@ -19,7 +19,8 @@
       "mcp__Neon__get_database_tables",
       "mcp__Neon__run_sql",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
