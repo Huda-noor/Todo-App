@@ -31,12 +31,14 @@ deployment_app = FastAPI(
     version="1.0.0",
 )
 
-# Configure CORS - allow Vercel frontend and localhost for development
+# Configure CORS - allow Vercel frontend, Hugging Face Space, and localhost
 cors_origins = [
     "http://localhost:3000",
     "http://localhost:3001",
     "https://frontend-jei1yp699-huda-noors-projects.vercel.app",
     "https://*.vercel.app",
+    "https://huda11noor-todo-backend.hf.space",
+    "https://*.hf.space",
 ]
 
 deployment_app.add_middleware(
