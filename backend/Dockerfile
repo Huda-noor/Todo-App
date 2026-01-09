@@ -18,7 +18,8 @@ EXPOSE 7860
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
-ENV APP_MODULE=api.index:handler
+ENV PYTHONPATH=/app/backend
+ENV APP_MODULE=api.index:app
 
 # Command to run the app
-CMD ["uvicorn", "api.index:handler", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["uvicorn", "api.index:app", "--host", "0.0.0.0", "--port", "7860"]
