@@ -13,13 +13,12 @@ RUN pip install --no-cache-dir -r requirements-hf.txt
 # Copy application code
 COPY . .
 
-# Expose port
+# Expose port 7860 (Hugging Face requires this port)
 EXPOSE 7860
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app/backend
-ENV APP_MODULE=api.index:app
 
-# Command to run the app
-CMD ["uvicorn", "api.index:app", "--host", "0.0.0.0", "--port", "7860"]
+# Command to run the app via Python (HF requirement - don't use uvicorn directly)
+CMD ["python", "api/index.py"]
