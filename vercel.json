@@ -1,0 +1,7 @@
+{
+  "buildCommand": "cd phase-2/frontend && npm run build",
+  "outputDirectory": "phase-2/frontend/.next",
+  "devCommand": "cd phase-2/frontend && npm run dev",
+  "installCommand": "cd phase-2/frontend && npm install",
+  "framework": "nextjs"
+}
