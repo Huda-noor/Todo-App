@@ -1,16 +1,13 @@
 <!--
 Sync Impact Report:
-- Version change: 1.0.0 → 1.1.0
+- Version change: 1.1.0 → 1.2.0
 - Modified principles:
-  * III. Phase Governance & Isolation → III. Phase Governance & Isolation (expanded)
-  * IV. Technology Constraints → IV. Technology Constraints (expanded with phase matrix)
-  * V. Quality & Architecture Principles → V. Quality & Architecture Principles (expanded)
+  * II. Agent Behavior Rules → II. Agent Behavior Rules (expanded with Phase III clauses)
+  * III. Phase Governance & Isolation → III. Phase Governance & Isolation (strengthened for Phase III)
+  * IV. Technology Constraints → IV. Technology Constraints (expanded with Phase III authorizations)
+  * V. Quality & Architecture Principles → V. Quality & Architecture Principles (added Phase III principles)
 - Added sections:
-  * Phase-specific technology matrix in Section IV
-  * Phase II technology authorizations in Section IV
-  * Back-porting prohibition rules in Section III
-  * Full-stack separation principles in Section V
-  * Authentication security principles in Section V
+  * VII. Phase III AI & Tooling Principles
 - Removed sections: None
 - Templates requiring updates:
   * plan-template.md - No changes required (already uses Constitution Check pattern)
@@ -48,7 +45,7 @@ The **ONLY** allowed execution flow is:
 
 **Rationale**: Spec-Driven Development ensures consistency, traceability, and prevents scope creep. All decisions are documented and approved before implementation, reducing rework and maintaining architectural integrity.
 
-### II. Agent Behavior Rules (Zero Deviation)
+### II. Agent Behavior Rules (Zero Deviation) [Amended for Phase III]
 
 All agents must behave as deterministic executors of specifications.
 
@@ -60,9 +57,15 @@ All agents must behave as deterministic executors of specifications.
 - Adding optimizations or enhancements not explicitly specified
 - "Improving" the product beyond what is specified
 
-**Rationale**: Agents are execution tools, not decision-makers. Human oversight and specification approval ensure quality control and prevent unauthorized changes that could introduce bugs or violate requirements.
+**Phase III-Specific Rules (AI Agents)**:
+- AI agents (via OpenAI Agents SDK) **MUST** be deterministic executors that only call approved MCP tools
+- No invention of new tools or direct manipulation of data outside MCP
+- All agent decisions **MUST** be traceable to user intent expressed in conversation
+- Agents **MUST NOT** access the database directly; all data operations occur through MCP tools only
 
-### III. Phase Governance & Isolation
+**Rationale**: Agents are execution tools, not decision-makers. Human oversight and specification approval ensure quality control and prevent unauthorized changes that could introduce bugs or violate requirements. Phase III agents are bounded tool-callers, not autonomous actors.
+
+### III. Phase Governance & Isolation [Amended for Phase III]
 
 The project is divided into strictly isolated phases (Phase I to Phase V).
 
@@ -75,12 +78,20 @@ The project is divided into strictly isolated phases (Phase I to Phase V).
 **Back-Porting Prohibition**:
 - Phase II technologies (FastAPI, SQLModel, Neon DB, Next.js, Better Auth) are **PROHIBITED** in Phase I
 - Authentication, web frontend, and persistent database are **PROHIBITED** in Phase I
-- No AI, agent frameworks, or advanced infrastructure (Docker, Kubernetes, Kafka, Dapr, OpenAI Agents SDK, MCP) may be used until their designated later phases
+- Phase III technologies (OpenAI Agents SDK, MCP, chat endpoints) are **PROHIBITED** in Phase I and II
+- AI, agent frameworks, or advanced infrastructure (Docker, Kubernetes, Kafka, Dapr) may be used only in their designated later phases
 - Any attempt to introduce a higher-phase technology into a lower phase is a constitutional violation
+
+**Phase III Isolation Rules**:
+- Phase III **MUST** extend the existing full-stack application (Phase II) by adding a conversational layer on top
+- Core Todo CRUD and authentication remain unchanged in Phase III
+- AI agents **MUST** interact with the system **exclusively** through MCP tools — no direct database access or in-memory state
+- No leakage of Phase III technologies (OpenAI Agents SDK, MCP, chat endpoints) into earlier phases
 
 **Phase Progression Rules**:
 - Phase II MUST build incrementally on Phase I concepts
 - Persistence, API, and web UI are implemented as new layers in Phase II, not modifications to Phase I
+- Phase III builds on Phase II by adding conversational AI as an additional layer
 - Each phase delivers complete, working software before the next phase begins
 - Phase transitions require explicit specification approval
 
@@ -88,7 +99,7 @@ The project is divided into strictly isolated phases (Phase I to Phase V).
 
 **Rationale**: Phase isolation prevents complexity creep, ensures each phase delivers working software, and maintains focus on current requirements without prematurely optimizing for uncertain futures.
 
-### IV. Technology Constraints (Non-Negotiable)
+### IV. Technology Constraints (Non-Negotiable) [Amended for Phase III]
 
 All agents **MUST** comply with the following phase-specific technology matrix:
 
@@ -103,6 +114,8 @@ All agents **MUST** comply with the following phase-specific technology matrix:
 - Web servers, APIs, or HTTP
 - Authentication or user management
 - Frontend technologies
+- OpenAI Agents SDK (explicitly prohibited)
+- MCP (explicitly prohibited)
 
 **Architecture**: Pure in-memory Python console application
 
@@ -120,17 +133,42 @@ All agents **MUST** comply with the following phase-specific technology matrix:
 - Better Auth library
 - Email/password authentication ONLY (no OAuth, SSO, or social login in Phase II)
 
+**Explicitly Prohibited in Phase II**:
+- OpenAI Agents SDK (explicitly prohibited)
+- MCP (explicitly prohibited)
+- AI/ML libraries
+- Chat endpoints
+
 **Architecture**: Full-stack web application with separate backend and frontend
 
-#### Phase III–V: Advanced Infrastructure
+#### Phase III: Conversational AI Interface [New Authorization]
+
+**Authorized Technologies**:
+- **AI Logic**: OpenAI Agents SDK
+- **Tooling & Orchestration**: Model Context Protocol (MCP) with official MCP SDK
+- **MCP Server**: Dedicated stateless MCP endpoint exposing task operations as tools
+- **Conversational Interface**: Stateless chat API endpoint
+- **State Management**: Conversation history and task state persisted in Neon PostgreSQL (existing database)
+
+**Architecture**:
+- Extends Phase II full-stack application
+- Adds conversational layer via OpenAI Agents SDK
+- MCP server exposes deterministic tools for task operations
+- Chat endpoint manages conversation threads
+- All state persisted in existing database
+
+**Rules**:
+- AI agents may ONLY interact with system through MCP tools
+- No direct database access from AI agents
+- Stateless services (chat endpoint, MCP tools)
+
+#### Phase IV–V: Advanced Infrastructure
 
 **Authorized Technologies** (in designated phases):
 - Docker
 - Kubernetes
 - Kafka
 - Dapr
-- OpenAI Agents SDK
-- MCP (Model Context Protocol)
 
 **Rules**:
 - No alternative languages, frameworks, or tools may be introduced without formal specification update
@@ -139,7 +177,7 @@ All agents **MUST** comply with the following phase-specific technology matrix:
 
 **Rationale**: Technology standardization reduces complexity, ensures team expertise concentration, and maintains consistent patterns across the codebase. Phase-locking prevents premature complexity and ensures each phase is buildable with its authorized stack.
 
-### V. Quality & Architecture Principles
+### V. Quality & Architecture Principles [Amended for Phase III]
 
 All deliverables must adhere to the following principles:
 
@@ -172,12 +210,19 @@ All deliverables must adhere to the following principles:
 - No sensitive data in URL parameters
 - HTTPS required for all authenticated endpoints (production)
 
+**Phase III AI & Tool Architecture** (Phase III+):
+- **Stateless Services**: Both chat endpoint and all MCP tools must be stateless
+- **Persistence**: Conversation threads and task state must be stored in the database and retrieved per request
+- **Separation of Concerns**: Clear boundary between AI orchestration (OpenAI Agents SDK), tool execution (MCP server), and data persistence (existing backend)
+- **No Autonomous Agents**: No multi-agent swarms or background processes; single-agent tool-calling pattern only
+- **Deterministic Tool Execution**: MCP tools must be deterministic and idempotent where appropriate
+
 **Rules**:
 - Quality is mandatory and cannot be postponed to later phases
 - Architecture decisions must be documented in specifications before implementation
 - Code reviews must verify adherence to these principles
 
-**Rationale**: Quality debt compounds exponentially. Building quality in from the start is cheaper than retrofitting it later. Cloud-native patterns ensure scalability and maintainability as the system grows. Full-stack separation enables independent scaling and team specialization.
+**Rationale**: Quality debt compounds exponentially. Building quality in from the start is cheaper than retrofitting it later. Cloud-native patterns ensure scalability and maintainability as the system grows. Full-stack separation enables independent scaling and team specialization. Phase III stateless architecture ensures reliability and testability.
 
 ### VI. Test-First Development (When Specified)
 
@@ -190,6 +235,38 @@ When tests are explicitly required in specifications:
 - All tests MUST pass before task completion
 
 **Rationale**: Test-first development ensures requirements are testable, reduces defects, and provides living documentation of system behavior.
+
+### VII. Phase III AI & Tooling Principles [New Section - Added for Phase III]
+
+**Scope**: This section applies to Phase III and any subsequent phases that involve AI agents, MCP tools, or conversational interfaces.
+
+**AI Agent Constraints**:
+- AI agents may ONLY manage tasks via MCP tools — no direct database access or in-memory state manipulation
+- MCP tools must be completely stateless and rely solely on database for persistence
+- All tool operations must respect existing user authentication and data isolation
+- No multi-agent swarms or orchestration beyond single-agent tool-calling pattern
+- No autonomous agents or background processes
+
+**Conversation Management**:
+- Conversation context must be loaded from and saved to the database on every request
+- Conversation threads are persisted and associated with authenticated users
+- No in-memory conversation state between requests
+- Each chat request includes sufficient context for the AI agent to operate
+
+**MCP Tool Design**:
+- All MCP tools must be stateless
+- Each tool operation must be atomic and idempotent where appropriate
+- Tools must validate input and return structured error responses
+- Tools must enforce user authorization and data isolation
+- Tool operations must be traceable and auditable
+
+**AI Orchestration Boundaries**:
+- OpenAI Agents SDK is responsible ONLY for tool selection and invocation
+- Business logic resides in existing backend services, not in AI agents
+- No business rule enforcement in the AI layer
+- AI agents must not make autonomous decisions beyond calling approved tools
+
+**Rationale**: These principles ensure that AI capabilities are deterministic, testable, and securely integrated. Stateless architecture enables horizontal scaling and reliability. Clear boundaries between AI orchestration and business logic maintain system integrity and prevent AI from bypassing established safeguards.
 
 ## Development Workflow
 
@@ -292,4 +369,4 @@ Constitutional changes require:
 4. User approval
 5. Version increment following semantic versioning
 
-**Version**: 1.1.0 | **Ratified**: 2025-12-27 | **Last Amended**: 2025-12-28
+**Version**: 1.2.0 | **Ratified**: 2025-12-27 | **Last Amended**: 2026-01-10
