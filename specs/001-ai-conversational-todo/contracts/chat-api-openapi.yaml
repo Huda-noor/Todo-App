@@ -1,0 +1,249 @@
+openapi: 3.0.3
+info:
+  title: AI Conversational Todo Interface API
+  description: API for managing todos through natural language conversation
+  version: 1.0.0
+  contact:
+    name: Todo App Team
+    email: team@example.com
+
+servers:
+  - url: https://api.todoapp.com/v1
+    description: Production server
+  - url: http://localhost:8000/v1
+    description: Development server
+
+tags:
+  - name: chat
+    description: Conversational AI interface for todo management
+
+paths:
+  /chat/converse:
+    post:
+      tags:
+        - chat
+      summary: Process a conversational message for todo management
+      description: |
+        Sends a natural language message to the AI agent for processing.
+        The agent interprets the intent and performs appropriate todo operations.
+        Supports multi-turn conversations through thread management.
+      operationId: processChatMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+            example:
+              message: "Add a task to buy groceries"
+              thread_id: "770e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Successful response from the AI agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+              example:
+                response: "I've created a new todo: 'Buy groceries'"
+                thread_id: "770e8400-e29b-41d4-a716-446655440000"
+                actions_taken:
+                  - tool: "create_todo"
+                    description: "Created todo with title 'Buy groceries'"
+                    result:
+                      success: true
+                      todo_id: "660e8400-e29b-41d4-a716-446655440001"
+                suggestions:
+                  - "Would you like to add more todos?"
+                  - "Show me all your tasks"
+        '400':
+          description: Bad request - invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - invalid or missing authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Unprocessable entity - validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too many requests - rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Phase II authentication token
+
+  schemas:
+    ChatRequest:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: The user's natural language message
+          example: "Add a task to buy groceries"
+          minLength: 1
+          maxLength: 10000
+        thread_id:
+          type: string
+          format: uuid
+          description: The conversation thread ID (omit for new conversation)
+          example: "770e8400-e29b-41d4-a716-446655440000"
+
+    ChatResponse:
+      type: object
+      required:
+        - response
+        - thread_id
+      properties:
+        response:
+          type: string
+          description: The AI agent's natural language response
+          example: "I've created a new todo: 'Buy groceries'"
+        thread_id:
+          type: string
+          format: uuid
+          description: The conversation thread ID
+          example: "770e8400-e29b-41d4-a716-446655440000"
+        actions_taken:
+          type: array
+          description: List of actions performed by the agent
+          items:
+            $ref: '#/components/schemas/ActionObject'
+        suggestions:
+          type: array
+          description: Suggested follow-up actions
+          items:
+            type: string
+          example:
+            - "Would you like to add more todos?"
+            - "Show me all your tasks"
+
+    ActionObject:
+      type: object
+      required:
+        - tool
+        - description
+        - result
+      properties:
+        tool:
+          type: string
+          description: The name of the tool that was called
+          enum: [create_todo, list_todos, update_todo, delete_todo, toggle_todo_completion]
+          example: "create_todo"
+        description:
+          type: string
+          description: Human-readable description of the action
+          example: "Created todo with title 'Buy groceries'"
+        result:
+          type: object
+          description: Result of the tool execution
+          properties:
+            success:
+              type: boolean
+              description: Whether the tool execution was successful
+              example: true
+            todo_id:
+              type: string
+              format: uuid
+              description: ID of the affected todo (for create/update/delete)
+              example: "660e8400-e29b-41d4-a716-446655440001"
+            todos:
+              type: array
+              description: List of todos (for list_todos)
+              items:
+                $ref: '#/components/schemas/Todo'
+            message:
+              type: string
+              description: Additional message from the tool
+              example: "Todo created successfully"
+          required:
+            - success
+
+    Todo:
+      type: object
+      required:
+        - id
+        - user_id
+        - description
+        - is_complete
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the todo
+          example: "660e8400-e29b-41d4-a716-446655440001"
+        user_id:
+          type: string
+          format: uuid
+          description: ID of the user who owns this todo
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        description:
+          type: string
+          description: Description of the todo
+          example: "Buy groceries"
+        is_complete:
+          type: boolean
+          description: Whether the todo is completed
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the todo was created
+          example: "2026-01-14T10:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp when the todo was last updated
+          example: "2026-01-14T10:00:00Z"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Invalid authentication token"
+
+  parameters:
+    ThreadIdParam:
+      name: thread_id
+      in: path
+      required: true
+      description: The conversation thread ID
+      schema:
+        type: string
+        format: uuid
+        example: "770e8400-e29b-41d4-a716-446655440000"
+
+security:
+  - bearerAuth: []

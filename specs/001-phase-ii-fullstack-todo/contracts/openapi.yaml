@@ -1,0 +1,386 @@
+openapi: 3.1.0
+info:
+  title: Phase II Todo API
+  description: |
+    RESTful API for the Phase II Full-Stack Todo Web Application.
+    Authentication is handled by Better Auth (Next.js); this API validates sessions
+    via shared database and manages todo CRUD operations.
+  version: 1.0.0
+  contact:
+    name: Evolution of Todo Project
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: https://api.todo.example.com
+    description: Production server (placeholder)
+
+tags:
+  - name: Authentication
+    description: Session validation endpoints (proxy to Better Auth)
+  - name: Todos
+    description: Todo CRUD operations
+
+paths:
+  /api/auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get current user info
+      description: Returns the authenticated user's information based on session cookie
+      operationId: getCurrentUser
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: User information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Not authenticated"
+
+  /api/todos:
+    get:
+      tags:
+        - Todos
+      summary: List user's todos
+      description: Returns all todos belonging to the authenticated user
+      operationId: listTodos
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: Todos retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoListResponse'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - Todos
+      summary: Create a new todo
+      description: Creates a new todo for the authenticated user
+      operationId: createTodo
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTodoRequest'
+      responses:
+        '201':
+          description: Todo created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empty:
+                  value:
+                    error: "Todo description cannot be empty"
+                tooLong:
+                  value:
+                    error: "Todo description cannot exceed 500 characters"
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/todos/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Todo UUID
+        schema:
+          type: string
+          format: uuid
+
+    get:
+      tags:
+        - Todos
+      summary: Get a single todo
+      description: Returns a specific todo if owned by the authenticated user
+      operationId: getTodo
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: Todo retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoResponse'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Todo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Todo not found"
+
+    put:
+      tags:
+        - Todos
+      summary: Update todo description
+      description: Updates the description of a todo owned by the authenticated user
+      operationId: updateTodo
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTodoRequest'
+      responses:
+        '200':
+          description: Todo updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Todo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Todos
+      summary: Delete a todo
+      description: Permanently deletes a todo owned by the authenticated user
+      operationId: deleteTodo
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: Todo deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: "Todo deleted successfully"
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Todo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/todos/{id}/toggle:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Todo UUID
+        schema:
+          type: string
+          format: uuid
+
+    patch:
+      tags:
+        - Todos
+      summary: Toggle todo completion status
+      description: Toggles the is_complete status of a todo owned by the authenticated user
+      operationId: toggleTodo
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: Todo toggled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoResponse'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Todo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: better-auth.session_token
+      description: Better Auth session token cookie
+
+  schemas:
+    UserResponse:
+      type: object
+      required:
+        - id
+        - email
+        - created_at
+      properties:
+        id:
+          type: string
+          description: User ID (Better Auth format)
+          example: "clx1234567890"
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: "user@example.com"
+        created_at:
+          type: string
+          format: date-time
+          description: Account creation timestamp
+          example: "2025-12-28T10:00:00Z"
+
+    TodoResponse:
+      type: object
+      required:
+        - id
+        - description
+        - is_complete
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Todo unique identifier
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        description:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: Todo content
+          example: "Buy groceries"
+        is_complete:
+          type: boolean
+          description: Completion status
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
+          example: "2025-12-28T10:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Last modification timestamp
+          example: "2025-12-28T10:00:00Z"
+
+    TodoListResponse:
+      type: object
+      required:
+        - todos
+        - count
+      properties:
+        todos:
+          type: array
+          items:
+            $ref: '#/components/schemas/TodoResponse'
+        count:
+          type: integer
+          minimum: 0
+          description: Total number of todos
+          example: 5
+
+    CreateTodoRequest:
+      type: object
+      required:
+        - description
+      properties:
+        description:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: Todo content (1-500 characters)
+          example: "Buy groceries"
+
+    UpdateTodoRequest:
+      type: object
+      required:
+        - description
+      properties:
+        description:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: Updated todo content (1-500 characters)
+          example: "Buy groceries and milk"
+
+    MessageResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Success message
+          example: "Operation completed successfully"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "An error occurred"
